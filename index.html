@@ -10,13 +10,13 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
 
-/* ─── TOP BLUE STRIPE (World Bank style112) ─── */
+/* ─── TOP BLUE STRIPE (World Bank style) ─── */
 .top-stripe{
   height:5px;
   background:linear-gradient(90deg,#005bac 0%,#0072d4 50%,#00a8e0 100%);
 }
 
-/* ─── MAIN NAV 00─── */
+/* ─── MAIN NAV ─── */
 .app-nav{
   background:#ffffff;
   border-bottom:1px solid #e2e8f0;
@@ -435,39 +435,6 @@ footer em{color:#3b82f6;font-style:normal}
   font-weight:600;color:#fff;line-height:1.35;letter-spacing:-.01em;
 }
 .footer-banner-title strong{color:#7ec8ff}
-.feedback-box{
-  flex:1;min-width:300px;max-width:460px;
-  background:rgba(255,255,255,.07);
-  border:1px solid rgba(255,255,255,.15);
-  border-radius:14px;padding:20px 22px;
-}
-.feedback-title{
-  font-family:var(--ffd,&quot;Space Grotesk&quot;,sans-serif);
-  font-size:14px;font-weight:600;color:rgba(255,255,255,.85);
-  margin-bottom:12px;
-}
-.feedback-form{display:flex;flex-direction:column;gap:10px}
-#feedback-input{
-  width:100%;padding:11px 14px;
-  background:rgba(255,255,255,.1);
-  border:1px solid rgba(255,255,255,.2);
-  border-radius:8px;color:#fff;
-  font-family:var(--ff,&quot;DM Sans&quot;,sans-serif);
-  font-size:13px;line-height:1.55;resize:none;outline:none;
-  transition:border-color .15s;
-}
-#feedback-input::placeholder{color:rgba(255,255,255,.4)}
-#feedback-input:focus{border-color:rgba(126,200,255,.6)}
-#feedback-btn{
-  align-self:flex-start;
-  padding:9px 24px;border-radius:30px;border:none;
-  background:#fff;color:#0a1f44;
-  font-family:var(--ffd,&quot;Space Grotesk&quot;,sans-serif);
-  font-size:13px;font-weight:700;cursor:pointer;
-  transition:background .15s,transform .15s;
-}
-#feedback-btn:hover{background:#d0e8ff;transform:scale(1.03)}
-.feedback-sent{
   font-size:13px;color:#86efac;padding:8px 0;font-weight:500;
 }
 
@@ -574,13 +541,7 @@ footer em{color:#3b82f6;font-style:normal}
     <div class=&quot;footer-banner-text&quot;>
       <div class=&quot;footer-banner-title&quot;><strong>STAY CURRENT</strong> WITH OUR LATEST DATA &amp;amp; INSIGHTS</div>
     </div>
-    <div class=&quot;feedback-box&quot;>
-      <div class=&quot;feedback-title&quot;>💬 数据反馈 / 内容建议</div>
-      <div class=&quot;feedback-form&quot; id=&quot;feedback-form&quot;>
-        <textarea id=&quot;feedback-input&quot; placeholder=&quot;请输入您的反馈或希望补充的数据…&quot; rows=&quot;3&quot;></textarea>
-        <button id=&quot;feedback-btn&quot; onclick=&quot;sendFeedback()&quot;>发送反馈</button>
       </div>
-      <div id=&quot;feedback-sent&quot; style=&quot;display:none&quot; class=&quot;feedback-sent&quot;>✅ 感谢您的反馈，已发送至数据团队！</div>
     </div>
   </div>
 </div>
@@ -1427,39 +1388,6 @@ footer em{color:#3b82f6;font-style:normal}
   font-weight:600;color:#fff;line-height:1.35;letter-spacing:-.01em;
 }
 .footer-banner-title strong{color:#7ec8ff}
-.feedback-box{
-  flex:1;min-width:300px;max-width:460px;
-  background:rgba(255,255,255,.07);
-  border:1px solid rgba(255,255,255,.15);
-  border-radius:14px;padding:20px 22px;
-}
-.feedback-title{
-  font-family:var(--ffd,&quot;Space Grotesk&quot;,sans-serif);
-  font-size:14px;font-weight:600;color:rgba(255,255,255,.85);
-  margin-bottom:12px;
-}
-.feedback-form{display:flex;flex-direction:column;gap:10px}
-#feedback-input{
-  width:100%;padding:11px 14px;
-  background:rgba(255,255,255,.1);
-  border:1px solid rgba(255,255,255,.2);
-  border-radius:8px;color:#fff;
-  font-family:var(--ff,&quot;DM Sans&quot;,sans-serif);
-  font-size:13px;line-height:1.55;resize:none;outline:none;
-  transition:border-color .15s;
-}
-#feedback-input::placeholder{color:rgba(255,255,255,.4)}
-#feedback-input:focus{border-color:rgba(126,200,255,.6)}
-#feedback-btn{
-  align-self:flex-start;
-  padding:9px 24px;border-radius:30px;border:none;
-  background:#fff;color:#0a1f44;
-  font-family:var(--ffd,&quot;Space Grotesk&quot;,sans-serif);
-  font-size:13px;font-weight:700;cursor:pointer;
-  transition:background .15s,transform .15s;
-}
-#feedback-btn:hover{background:#d0e8ff;transform:scale(1.03)}
-.feedback-sent{
   font-size:13px;color:#86efac;padding:8px 0;font-weight:500;
 }
 
@@ -1577,13 +1505,7 @@ body{background:var(--bg)}
     <div class=&quot;footer-banner-text&quot;>
       <div class=&quot;footer-banner-title&quot;><strong>STAY CURRENT</strong> WITH OUR LATEST DATA &amp;amp; INSIGHTS</div>
     </div>
-    <div class=&quot;feedback-box&quot;>
-      <div class=&quot;feedback-title&quot;>💬 数据反馈 / 内容建议</div>
-      <div class=&quot;feedback-form&quot; id=&quot;feedback-form&quot;>
-        <textarea id=&quot;feedback-input&quot; placeholder=&quot;请输入您的反馈或希望补充的数据…&quot; rows=&quot;3&quot;></textarea>
-        <button id=&quot;feedback-btn&quot; onclick=&quot;sendFeedback()&quot;>发送反馈</button>
       </div>
-      <div id=&quot;feedback-sent&quot; style=&quot;display:none&quot; class=&quot;feedback-sent&quot;>✅ 感谢您的反馈，已发送至数据团队！</div>
     </div>
   </div>
 </div>
@@ -3101,39 +3023,6 @@ render();
   font-weight:600;color:#fff;line-height:1.35;letter-spacing:-.01em;
 }
 .footer-banner-title strong{color:#7ec8ff}
-.feedback-box{
-  flex:1;min-width:300px;max-width:460px;
-  background:rgba(255,255,255,.07);
-  border:1px solid rgba(255,255,255,.15);
-  border-radius:14px;padding:20px 22px;
-}
-.feedback-title{
-  font-family:var(--ffd,&quot;Space Grotesk&quot;,sans-serif);
-  font-size:14px;font-weight:600;color:rgba(255,255,255,.85);
-  margin-bottom:12px;
-}
-.feedback-form{display:flex;flex-direction:column;gap:10px}
-#feedback-input{
-  width:100%;padding:11px 14px;
-  background:rgba(255,255,255,.1);
-  border:1px solid rgba(255,255,255,.2);
-  border-radius:8px;color:#fff;
-  font-family:var(--ff,&quot;DM Sans&quot;,sans-serif);
-  font-size:13px;line-height:1.55;resize:none;outline:none;
-  transition:border-color .15s;
-}
-#feedback-input::placeholder{color:rgba(255,255,255,.4)}
-#feedback-input:focus{border-color:rgba(126,200,255,.6)}
-#feedback-btn{
-  align-self:flex-start;
-  padding:9px 24px;border-radius:30px;border:none;
-  background:#fff;color:#0a1f44;
-  font-family:var(--ffd,&quot;Space Grotesk&quot;,sans-serif);
-  font-size:13px;font-weight:700;cursor:pointer;
-  transition:background .15s,transform .15s;
-}
-#feedback-btn:hover{background:#d0e8ff;transform:scale(1.03)}
-.feedback-sent{
   font-size:13px;color:#86efac;padding:8px 0;font-weight:500;
 }
 </style>
@@ -3144,13 +3033,7 @@ render();
     <div class=&quot;footer-banner-text&quot;>
       <div class=&quot;footer-banner-title&quot;><strong>STAY CURRENT</strong> WITH OUR LATEST DATA &amp;amp; INSIGHTS</div>
     </div>
-    <div class=&quot;feedback-box&quot;>
-      <div class=&quot;feedback-title&quot;>💬 数据反馈 / 内容建议</div>
-      <div class=&quot;feedback-form&quot; id=&quot;feedback-form&quot;>
-        <textarea id=&quot;feedback-input&quot; placeholder=&quot;请输入您的反馈或希望补充的数据…&quot; rows=&quot;3&quot;></textarea>
-        <button id=&quot;feedback-btn&quot; onclick=&quot;sendFeedback()&quot;>发送反馈</button>
       </div>
-      <div id=&quot;feedback-sent&quot; style=&quot;display:none&quot; class=&quot;feedback-sent&quot;>✅ 感谢您的反馈，已发送至数据团队！</div>
     </div>
   </div>
 </div>
@@ -3508,39 +3391,6 @@ footer em{color:#3b82f6;font-style:normal}
   font-weight:600;color:#fff;line-height:1.35;letter-spacing:-.01em;
 }
 .footer-banner-title strong{color:#7ec8ff}
-.feedback-box{
-  flex:1;min-width:300px;max-width:460px;
-  background:rgba(255,255,255,.07);
-  border:1px solid rgba(255,255,255,.15);
-  border-radius:14px;padding:20px 22px;
-}
-.feedback-title{
-  font-family:var(--ffd,&quot;Space Grotesk&quot;,sans-serif);
-  font-size:14px;font-weight:600;color:rgba(255,255,255,.85);
-  margin-bottom:12px;
-}
-.feedback-form{display:flex;flex-direction:column;gap:10px}
-#feedback-input{
-  width:100%;padding:11px 14px;
-  background:rgba(255,255,255,.1);
-  border:1px solid rgba(255,255,255,.2);
-  border-radius:8px;color:#fff;
-  font-family:var(--ff,&quot;DM Sans&quot;,sans-serif);
-  font-size:13px;line-height:1.55;resize:none;outline:none;
-  transition:border-color .15s;
-}
-#feedback-input::placeholder{color:rgba(255,255,255,.4)}
-#feedback-input:focus{border-color:rgba(126,200,255,.6)}
-#feedback-btn{
-  align-self:flex-start;
-  padding:9px 24px;border-radius:30px;border:none;
-  background:#fff;color:#0a1f44;
-  font-family:var(--ffd,&quot;Space Grotesk&quot;,sans-serif);
-  font-size:13px;font-weight:700;cursor:pointer;
-  transition:background .15s,transform .15s;
-}
-#feedback-btn:hover{background:#d0e8ff;transform:scale(1.03)}
-.feedback-sent{
   font-size:13px;color:#86efac;padding:8px 0;font-weight:500;
 }
 
