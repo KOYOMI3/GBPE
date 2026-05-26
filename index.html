@@ -3985,5 +3985,783 @@ function switchPage(btn, page) {
   document.getElementById("frame-" + page).classList.add("active");
 }
 </script>
+  <!--
+  ╔══════════════════════════════════════════════════════════════╗
+  ║   CATL Intelligence Hub · DeepSeek 智能问询组件              ║
+  ║   使用方法：将此段代码粘贴到主 HTML 的 </body> 标签之前       ║
+  ║   ⚠ 注意：在下方 DEEPSEEK_API_KEY 处填入你的 API Key         ║
+  ╚══════════════════════════════════════════════════════════════╝
+-->
+
+<!-- ══ DeepSeek Chat Widget Styles ══ -->
+<style>
+/* ─── 悬浮按钮 ─── */
+#ds-fab {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 9999;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #005bac 0%, #0096d6 100%);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 91, 172, 0.45), 0 2px 8px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s;
+  outline: none;
+}
+#ds-fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 32px rgba(0, 91, 172, 0.55);
+}
+#ds-fab.open {
+  transform: scale(1) rotate(45deg);
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+}
+#ds-fab svg { pointer-events: none; transition: opacity 0.15s; }
+#ds-fab .icon-chat { position: absolute; }
+#ds-fab .icon-close { position: absolute; opacity: 0; }
+#ds-fab.open .icon-chat { opacity: 0; }
+#ds-fab.open .icon-close { opacity: 1; }
+
+/* ─── 未读气泡 ─── */
+#ds-unread {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+  pointer-events: none;
+}
+#ds-unread.show { opacity: 1; transform: scale(1); }
+
+/* ─── 对话框面板 ─── */
+#ds-panel {
+  position: fixed;
+  bottom: 100px;
+  right: 32px;
+  z-index: 9998;
+  width: 400px;
+  height: 580px;
+  max-height: calc(100vh - 140px);
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.18), 0 4px 16px rgba(0,91,172,0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(16px) scale(0.97);
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s cubic-bezier(.34,1.2,.64,1);
+  transform-origin: bottom right;
+}
+#ds-panel.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+}
+
+/* ─── 面板头部 ─── */
+#ds-header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+#ds-header::after {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: rgba(22,119,255,0.1);
+  pointer-events: none;
+}
+.ds-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #005bac, #0096d6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,91,172,0.4);
+}
+.ds-header-info { flex: 1; min-width: 0; }
+.ds-header-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #f1f5f9;
+  line-height: 1.2;
+}
+.ds-header-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+}
+.ds-status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  animation: dsPulse 2s infinite;
+}
+@keyframes dsPulse {
+  0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+}
+.ds-header-actions { display: flex; gap: 6px; }
+.ds-hbtn {
+  width: 28px; height: 28px;
+  border-radius: 7px;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.ds-hbtn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+/* ─── 快捷问题栏 ─── */
+#ds-suggestions {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 10px 14px;
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.ds-chip {
+  padding: 5px 11px;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  font-family: 'DM Sans', sans-serif;
+  line-height: 1.3;
+}
+.ds-chip:hover {
+  border-color: #005bac;
+  color: #005bac;
+  background: #e8f0fe;
+}
+
+/* ─── 消息区域 ─── */
+#ds-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-behavior: smooth;
+}
+#ds-messages::-webkit-scrollbar { width: 4px; }
+#ds-messages::-webkit-scrollbar-track { background: transparent; }
+#ds-messages::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+
+/* ─── 消息气泡 ─── */
+.ds-msg {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  animation: dsMsgIn 0.25s ease;
+}
+@keyframes dsMsgIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ds-msg.user { flex-direction: row-reverse; }
+.ds-msg-avatar {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; flex-shrink: 0;
+}
+.ds-msg.bot  .ds-msg-avatar { background: linear-gradient(135deg, #005bac, #0096d6); }
+.ds-msg.user .ds-msg-avatar { background: #e2e8f0; }
+.ds-bubble {
+  max-width: 82%;
+  padding: 10px 13px;
+  border-radius: 14px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  word-break: break-word;
+}
+.ds-msg.bot  .ds-bubble {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-radius: 4px 14px 14px 14px;
+}
+.ds-msg.user .ds-bubble {
+  background: linear-gradient(135deg, #005bac, #0096d6);
+  color: #fff;
+  border-radius: 14px 4px 14px 14px;
+}
+.ds-bubble strong { font-weight: 600; }
+.ds-bubble em { font-style: normal; color: #005bac; }
+.ds-msg.user .ds-bubble em { color: #bfdbfe; }
+
+/* ─── typing 动画 ─── */
+.ds-typing {
+  display: flex; gap: 4px;
+  align-items: center;
+  padding: 4px 2px;
+}
+.ds-typing span {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #94a3b8;
+  animation: dsTyping 1.2s infinite;
+}
+.ds-typing span:nth-child(2) { animation-delay: 0.2s; }
+.ds-typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dsTyping {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+
+/* ─── 错误消息 ─── */
+.ds-error {
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #fecaca;
+}
+
+/* ─── 输入区域 ─── */
+#ds-input-area {
+  border-top: 1px solid #e2e8f0;
+  padding: 12px 14px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  flex-shrink: 0;
+  background: #fff;
+}
+#ds-input {
+  flex: 1;
+  resize: none;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 9px 12px;
+  font-family: 'DM Sans', 'Space Grotesk', sans-serif;
+  font-size: 13.5px;
+  color: #0f172a;
+  outline: none;
+  transition: border-color 0.15s;
+  max-height: 100px;
+  min-height: 40px;
+  line-height: 1.5;
+  background: #f8fafc;
+}
+#ds-input:focus { border-color: #005bac; background: #fff; }
+#ds-input::placeholder { color: #94a3b8; }
+#ds-send {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #005bac, #0096d6);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+  flex-shrink: 0;
+}
+#ds-send:hover { opacity: 0.9; transform: scale(1.05); }
+#ds-send:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* ─── 底部模型标注 ─── */
+#ds-footer {
+  text-align: center;
+  padding: 5px 0 8px;
+  font-size: 10.5px;
+  color: #94a3b8;
+  background: #fff;
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.04em;
+}
+#ds-footer a { color: #64748b; text-decoration: none; }
+
+@media (max-width: 500px) {
+  #ds-panel { width: calc(100vw - 24px); right: 12px; bottom: 84px; }
+  #ds-fab { right: 18px; bottom: 22px; }
+}
+</style>
+
+<!-- ══ DeepSeek Chat Widget HTML ══ -->
+
+<!-- 悬浮按钮 -->
+<button id="ds-fab" title="智能问询 · DeepSeek" aria-label="打开AI问询">
+  <!-- 聊天图标 -->
+  <svg class="icon-chat" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </svg>
+  <!-- 关闭图标 -->
+  <svg class="icon-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round">
+    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+  <span id="ds-unread">1</span>
+</button>
+
+<!-- 对话面板 -->
+<div id="ds-panel" role="dialog" aria-label="AI智能问询">
+  <!-- 头部 -->
+  <div id="ds-header">
+    <div class="ds-avatar">🤖</div>
+    <div class="ds-header-info">
+      <div class="ds-header-name">CATL 政策情报助手</div>
+      <div class="ds-header-status">
+        <span class="ds-status-dot"></span>
+        <span>DeepSeek · 在线</span>
+      </div>
+    </div>
+    <div class="ds-header-actions">
+      <button class="ds-hbtn" id="ds-clear-btn" title="清空对话">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+      </button>
+      <button class="ds-hbtn" id="ds-close-btn" title="关闭">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- 快捷问题 -->
+  <div id="ds-suggestions">
+    <button class="ds-chip" data-q="德国EV补贴重启后，中国品牌能申请吗？">🇩🇪 德国补贴可申请？</button>
+    <button class="ds-chip" data-q="美国对中国电池的关税现在是多少？">🇺🇸 美国关税多少？</button>
+    <button class="ds-chip" data-q="USITC否决活性阳极材料双反税是怎么回事？">⚡ USITC裁定详情</button>
+    <button class="ds-chip" data-q="欧盟电池护照强制实施的具体要求是什么？">🇪🇺 电池护照要求</button>
+    <button class="ds-chip" data-q="哪个国家对中国电池关税最低，最适合出口？">📊 最低关税市场</button>
+  </div>
+
+  <!-- 消息区 -->
+  <div id="ds-messages">
+    <div class="ds-msg bot">
+      <div class="ds-msg-avatar">🤖</div>
+      <div class="ds-bubble">
+        你好！我是 <strong>CATL 政策情报助手</strong>，已加载当前看板全部数据，包括：<br><br>
+        🔋 <strong>补贴政策</strong>：中美欧日韩最新补贴详情<br>
+        🛃 <strong>关税图谱</strong>：19个市场对华电池关税<br>
+        📋 <strong>认证速查</strong>：UN R100、EU电池法等<br>
+        📰 <strong>大事件</strong>：2024-2026重大政策动态<br><br>
+        有任何问题，直接问我！
+      </div>
+    </div>
+  </div>
+
+  <!-- 输入区 -->
+  <div id="ds-input-area">
+    <textarea id="ds-input" placeholder="问我任何关于看板的问题…" rows="1"></textarea>
+    <button id="ds-send" title="发送 (Enter)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+  <div id="ds-footer">Powered by DeepSeek · 数据截至 2026年3月 · 仅供参考</div>
+</div>
+
+<!-- ══ DeepSeek Chat Widget Script ══ -->
+<script>
+(function () {
+  // ════════════════════════════════════════════
+  //  ⚠ 开发者配置区 · 在此填入你的 API Key
+  // ════════════════════════════════════════════
+  const DEEPSEEK_API_KEY = 'sk-RHFxC3HuFH61cx984a3611277a36475fBf5cF3Da4b4eFe19'; // ← 替换为你的 DeepSeek API Key
+  const DEEPSEEK_MODEL   = 'DeepSeek-V3-0324-64K-2';    // deepseek-chat = V3（推荐）| deepseek-reasoner = R1
+  const MAX_HISTORY      = 10;                 // 保留最近几轮对话（节省 token）
+  // ════════════════════════════════════════════
+
+  // ── 系统提示：看板完整数据摘要 ──
+  const SYSTEM_PROMPT = `你是 CATL（宁德时代）海外乘用车事业部的专属政策情报助手，负责解答用户关于全球电池产业政策的问题。
+你已加载以下看板数据，数据截至2026年3月，回答时直接引用具体数字，不要说"根据看板数据"，直接给出答案。
+
+## 一、全球EV补贴政策
+
+### 中国
+- 购置税减半（2026-2027年），每辆最高减1.5万元
+- 报废更新补贴：新车价12%，上限2万元
+- 置换更新补贴：新车价8%，上限1.5万元
+- 超充桩建设补贴：最高1200元/kW；运营补贴0.1元/度
+- 换电站：通用型补40%，大卡车最高80万元
+- 废旧电池回收：50度组2-3万元，容量>80%可+30%
+
+### 德国（2026年重启）
+- 补贴额度：1500-6000欧元，≤4.5万欧元车型最高可得5000欧元
+- 总规模：30-40亿欧元；明确无产地歧视，中国品牌可同等申请
+- 是欧盟内对华品牌最友好市场
+
+### 法国
+- 低收入群体：最高7000欧元（≈¥54,800）；有效至2026年底
+- 高收入群体：最高4000欧元
+- 仅约41%在售EV符合条件；2026年2月起须满足欧洲制造要求
+
+### 意大利
+- ISEE≤3万欧低收入家庭：最高€13,750（欧盟内单项最高）
+- 中等收入：约€7,000-9,000；以旧换新可额外叠加
+
+### 荷兰
+- SEPP私人购车补贴：€2,950/辆；购车价≤4.5万欧元；年度配额用完即止
+
+### 挪威
+- 25% VAT全免+道路税减免+停车优惠；综合折算≈¥54,000；长期政策；EV渗透率>90%
+
+### 英国（脱欧后）
+- 乘用EV Plug-in Grant重启：最高£3,750（售价≤£37,000）；总规模19.5-21.5亿英镑；延续至2030年
+- 电动卡车：4.25-12吨最高£20,000；12-18吨最高£60,000；18-26吨最高£80,000；26吨以上最高£120,000
+- ZEV强制销售比例：2030年80%，2035年100%
+
+### 美国
+- $7,500 EV税收抵免（30D）：2025年9月30日已终止（OBBB法案废除）
+- 二手车$4,000抵免：已废除
+- 新增EV年注册费：纯电$250/年，混动$100/年
+- 45X电池生产抵免：状态不明，面临削减风险
+- 预计EV销量短期下降约27%
+
+### 日本（2026年1月起上调）
+- 丰田bZ4X/日产Leaf：130/129万日元（+40万日元）
+- 特斯拉Model3：127万日元（+40万日元）
+- 比亚迪ATTO 3：35万日元（未调整，在售最低）
+- GI绿色创新基金：2万亿日元·10年期
+
+### 韩国
+- 国家补贴上限：580万韩元（↓自800万韩元）
+- 超小型EV：200万韩元（↓自400万，减半）
+- 全额补贴门槛：≤5300万韩元（↓自6000万）
+- 低收入/青年/多子女额外+20%；燃油车置换追加100万韩元
+- 2027年起进一步收紧
+
+## 二、关税政策
+
+### 美国对华关税（2026年3月·日内瓦协议后）
+- 车用动力电池Pack：≈58.4%（基础3.4%+301条款25%+加征30%）
+- 非车用/储能电池Pack：≈41%
+- 2025年4月曾短暂达82.4%-173.4%峰值，日内瓦协议后大幅回调
+- EV整车：100%（2024年9月起）
+- 正极材料NCM/LFP：41%-58.4%
+- 活性阳极材料双反税：0%（2026年3月12日USITC以2:1否决160%-169.58%双反税，已缴保证金全额退还）
+
+### 中国对美反制
+- 2025年4月10日起对全部美国商品加征34%额外关税
+- 配套7类稀土出口管制（钐/钆/铽/镝/镥/钪/钇）
+
+### 欧盟对华
+- 电池Pack基础MFN关税：2.7%（未纳入整车惩罚性措施）
+- 整车：基础10%+比亚迪17%/吉利18.8%/上汽35.3%（2024年10月转正）
+- 英国：电池Pack 2.0%
+
+### 其他市场对华电池Pack关税
+- 日本/韩国：0%（免税）
+- 沙特/科威特：5%
+- 哥伦比亚：5%
+- 印度：20%
+- 巴西/巴拉圭：18%
+- 厄瓜多尔：21.7%
+- 墨西哥：35%
+- 土耳其：50%（全球最高之一）
+- 摩洛哥：30%
+- 阿根廷/智利/秘鲁：0%
+
+### 中国出口管制（2025年11月8日起）
+- ≥300Wh/kg高端电池须出口许可证（主流液态电池≈260Wh/kg暂不受限）
+- 高压实密度≥2.5g/cm³正极材料须许可证
+- 人造石墨负极及混合材料须许可证
+- 卷绕机/叠片机/注液机等电芯核心装备须许可证
+
+## 三、认证法规
+
+### UN R100 Rev.3（欧盟/EEA强制）
+- 新车型：2023年9月1日起强制；全车型：2025年9月1日起
+- 新增Annex 9J直流过流测试（仅DC快充车型）
+- §6.15热扩散传播：须在危险前≥5分钟发出预警；路径A（热扩散不入乘员舱）可豁免
+
+### 欧盟电池法 EU 2023/1542
+- 电池护照强制：2027年2月18日（含QR码）
+- 碳足迹申报：EV电池2025年2月（待授权法规颁布）
+- 再生料比例第一阶段2031年：钴16%/锂6%/镍6%
+- 再生料比例第二阶段2036年：钴26%/锂12%/镍15%
+- 供应链尽调：已推迟至2027年8月18日
+
+### 中国 GB 38031-2025
+- 2026年7月1日强制替代2020版
+- 热扩散：不起火不爆炸，观察期≥2h
+- 新增底部撞击测试（30mm钢球150J×3次）
+- 新增300次快充循环后安全测试
+
+### 美国
+- EPA温室气体危害认定：2026年2月12日已撤销
+- FMVSS 305：碰撞后安全要求，仍有效
+- CARB ACC II：加州2030年80%/2035年100% ZEV要求
+
+### 日本
+- PSE附录12新版：2025年8月31日起停发旧版证书
+- JIS Z 7252/7253:2025：GHS第9版，5年过渡期至2030年底
+
+### 韩国
+- KC 62133-2：强制认证；ESS须配备接地故障检测、灭火、内压缓解装置
+
+## 四、重大事件时间轴
+
+### 负面/逆转
+- 2025年9月30日：美国$7,500 EV抵免终止
+- 2026年2月12日：EPA温室气体危害认定被撤销
+- 2025年4月10日：中国对美加征34%反制关税+稀土管制
+- 2024年10月：欧盟整车反补贴税正式生效
+- 2025年11月8日：中国电池出口管制新规生效
+
+### 积极/利好
+- 2026年3月12日：USITC否决160%-169.58%活性阳极材料双反税（2:1裁定）
+- 2027年2月18日：欧盟电池护照正式强制（含QR码）
+- 2026年1月：日本CEV补贴全面上调
+- 2026年：德国重启30-40亿欧元EV补贴，无产地限制
+
+回答要求：
+1. 用中文回答，专业简洁
+2. 数字精确引用，加粗关键数据
+3. 复杂问题分要点列举
+4. 看板数据以外的问题，诚实说明不在数据范围内
+5. 适当使用Emoji增强可读性`;
+
+  // ── DOM 元素 ──
+  const fab      = document.getElementById('ds-fab');
+  const panel    = document.getElementById('ds-panel');
+  const messages = document.getElementById('ds-messages');
+  const input    = document.getElementById('ds-input');
+  const sendBtn  = document.getElementById('ds-send');
+  const closeBtn = document.getElementById('ds-close-btn');
+  const clearBtn = document.getElementById('ds-clear-btn');
+  const unread   = document.getElementById('ds-unread');
+  const chips    = document.querySelectorAll('.ds-chip');
+
+  let isOpen    = false;
+  let isLoading = false;
+  let history   = []; // {role, content}
+  let hasShownUnread = false;
+
+  // ── 开关面板 ──
+  function togglePanel() {
+    isOpen = !isOpen;
+    fab.classList.toggle('open', isOpen);
+    panel.classList.toggle('open', isOpen);
+    if (isOpen) {
+      unread.classList.remove('show');
+      setTimeout(() => input.focus(), 200);
+    }
+  }
+
+  fab.addEventListener('click', togglePanel);
+  closeBtn.addEventListener('click', () => { isOpen = true; togglePanel(); });
+
+  // ── 清空对话 ──
+  clearBtn.addEventListener('click', () => {
+    history = [];
+    messages.innerHTML = `
+      <div class="ds-msg bot">
+        <div class="ds-msg-avatar">🤖</div>
+        <div class="ds-bubble">对话已清空，请继续提问！</div>
+      </div>`;
+  });
+
+  // ── 快捷问题 ──
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const q = chip.dataset.q;
+      if (q && !isLoading) sendMessage(q);
+    });
+  });
+
+  // ── 输入框自动高度 ──
+  input.addEventListener('input', () => {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 100) + 'px';
+  });
+
+  // ── 键盘发送（Enter 发送，Shift+Enter 换行）──
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!isLoading) sendMessage();
+    }
+  });
+
+  sendBtn.addEventListener('click', () => { if (!isLoading) sendMessage(); });
+
+  // ── 添加消息气泡 ──
+  function addMessage(role, content, isError = false) {
+    const div = document.createElement('div');
+    div.className = `ds-msg ${role}`;
+    const avatar = role === 'bot' ? '🤖' : '👤';
+    const errClass = isError ? ' ds-error' : '';
+    div.innerHTML = `
+      <div class="ds-msg-avatar">${avatar}</div>
+      <div class="ds-bubble${errClass}">${content}</div>`;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+    return div;
+  }
+
+  // ── 打字中状态 ──
+  function addTyping() {
+    const div = document.createElement('div');
+    div.className = 'ds-msg bot';
+    div.id = 'ds-typing-indicator';
+    div.innerHTML = `
+      <div class="ds-msg-avatar">🤖</div>
+      <div class="ds-bubble">
+        <div class="ds-typing"><span></span><span></span><span></span></div>
+      </div>`;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function removeTyping() {
+    const t = document.getElementById('ds-typing-indicator');
+    if (t) t.remove();
+  }
+
+  // ── 简单 Markdown → HTML ──
+  function mdToHtml(text) {
+    return text
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/`(.+?)`/g, '<code style="background:#f1f5f9;padding:1px 5px;border-radius:4px;font-family:monospace;font-size:12px">$1</code>')
+      .replace(/^###\s(.+)$/gm, '<strong style="color:#005bac;font-size:13px">$1</strong>')
+      .replace(/^##\s(.+)$/gm, '<strong style="font-size:14px">$1</strong>')
+      .replace(/^[-•]\s(.+)$/gm, '&nbsp;&nbsp;• $1')
+      .replace(/\n\n/g, '<br><br>')
+      .replace(/\n/g, '<br>');
+  }
+
+  // ── 核心：调用 DeepSeek API ──
+  async function sendMessage(overrideText) {
+    const text = (overrideText || input.value).trim();
+    if (!text || isLoading) return;
+
+    // 检查 API Key
+    if (!DEEPSEEK_API_KEY) {
+      addMessage('bot', '⚠️ <strong>请先配置 API Key</strong><br>在 HTML 源代码中找到 <code>DEEPSEEK_API_KEY</code> 变量并填入你的 DeepSeek API Key。', true);
+      return;
+    }
+
+    // 显示用户消息
+    addMessage('user', text.replace(/\n/g, '<br>'));
+    input.value = '';
+    input.style.height = 'auto';
+
+    // 记录历史
+    history.push({ role: 'user', content: text });
+    if (history.length > MAX_HISTORY * 2) {
+      history = history.slice(-MAX_HISTORY * 2);
+    }
+
+    // 开始加载
+    isLoading = true;
+    sendBtn.disabled = true;
+    addTyping();
+
+    try {
+      const resp = await fetch('https://aigate-dev.catl.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: DEEPSEEK_MODEL,
+          max_tokens: 50000,
+          temperature: 0.3,
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            ...history
+          ]
+        })
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error?.message || `HTTP ${resp.status}`);
+      }
+
+      const data = await resp.json();
+      const reply = data.choices?.[0]?.message?.content || '抱歉，未获取到回复。';
+
+      removeTyping();
+      addMessage('bot', mdToHtml(reply));
+
+      // 记录助手回复
+      history.push({ role: 'assistant', content: reply });
+
+      // 如果面板未打开，显示未读提示
+      if (!isOpen) {
+        unread.textContent = '1';
+        unread.classList.add('show');
+      }
+
+    } catch (err) {
+      removeTyping();
+      let errMsg = err.message || '网络错误';
+      if (errMsg.includes('401')) errMsg = 'API Key 无效，请检查配置';
+      else if (errMsg.includes('402')) errMsg = 'API 余额不足，请充值';
+      else if (errMsg.includes('429')) errMsg = '请求过于频繁，请稍后再试';
+      else if (errMsg.includes('Failed to fetch')) errMsg = '网络连接失败，请检查网络';
+      addMessage('bot', `❌ 请求失败：${errMsg}`, true);
+      // 回滚 history
+      history.pop();
+    } finally {
+      isLoading = false;
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  }
+
+  // ── 3秒后显示未读气泡引导用户 ──
+  setTimeout(() => {
+    if (!isOpen && !hasShownUnread) {
+      hasShownUnread = true;
+      unread.textContent = '1';
+      unread.classList.add('show');
+    }
+  }, 3000);
+
+})();
+</script>
+
+
 </body>
 </html>
